@@ -1,0 +1,19 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+  pre_tasks:
+    - name: 'Install Python'
+      raw: sudo dnf -y install python
+  tasks:
+    - name: Install Dependicies
+      dnf: name={{ item }} state=present
+      with_items:
+        - git
+        - java-1.8.0-openjdk
+    - name: Install Python Packages
+      pip: name={{ item }} state=present
+      with_items:
+        - pandas
+        - numpy
+        - plotly
