@@ -27,12 +27,17 @@
       poll: 0
       args:
         chdir: /home/vagrant/kafka_2.11-1.1.0/
-        
+
     - name: Start Kafka
       shell: bin/kafka-server-start.sh config/server.properties
       # https://ansibledaily.com/execute-detached-process-with-ansible/
       async: 2592000
       poll: 0
+      args:
+        chdir: /home/vagrant/kafka_2.11-1.1.0/
+
+    - name: Create test topic
+      shell: bin/kafka-topics.sh --list --zookeeper localhost:2181
       args:
         chdir: /home/vagrant/kafka_2.11-1.1.0/
 
