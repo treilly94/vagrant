@@ -1,0 +1,51 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+
+  pre_tasks:
+    - name: 'Install Python'
+      raw: sudo dnf -y install python
+
+  tasks:
+    - name: Install virtualbox prerequisites
+      dnf: name={{ item }} state=present
+      with_items:
+        - kernel-devel 
+        - kernel-headers 
+        - dkms
+        - libselinux-python
+
+    - name: Add rpm keys
+      rpm_key:
+        state: present
+        key: https://www.virtualbox.org/download/oracle_vbox.asc
+
+    - name: Add virtualbox repofile
+      get_url:
+        url: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
+        dest: /etc/yum.repos.d/virtualbox.repo
+
+    - name: Add kubectl repofile
+      copy:
+        dest: "/etc/yum.repos.d/kubernetes.repo"
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+          enabled=1
+          gpgcheck=1
+          repo_gpgcheck=1
+          gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+    - name: Install pachyderm prerequisites
+      dnf: name={{ item }} state=present
+      with_items:
+        - VirtualBox-5.2
+        - kubectl
+
+    - name: Install minikube
+      shell: curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+
+    - name: Install pachctl
+      shell: curl -o /tmp/pachctl.tar.gz -L https://github.com/pachyderm/pachyderm/releases/download/v1.7.3/pachctl_1.7.3_linux_amd64.tar.gz && tar -xvf /tmp/pachctl.tar.gz -C /tmp && sudo cp /tmp/pachctl_1.7.3_linux_amd64/pachctl /usr/local/bin
